@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import sg.edu.nus.qac_android.data.entity.Question;
 import sg.edu.nus.qac_android.databinding.ActivityMainBinding;
+import sg.edu.nus.qac_android.notification.NotificationBottomSheet;
 import sg.edu.nus.qac_android.splash.QuestionAdapter;
 
 import android.view.Menu;
@@ -33,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private QuestionAdapter adapter;
     private List<Question> questionList;
-
     private ActivityMainBinding binding;
 
     @Override
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // TODO: Link this to CREATE QUESTION
                 Snackbar.make(view, "TODO: Link this to CREATE QUESTION", Snackbar.LENGTH_LONG)
                         .setAnchorView(R.id.fab)
                         .setAction("Action", null).show();
@@ -72,13 +73,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_notifications) {
+            NotificationBottomSheet bottomSheet = new NotificationBottomSheet();
+            bottomSheet.show(getSupportFragmentManager(), "NotificationBottomSheet");
+            return true;
+        } else if (id == R.id.action_user) {
+            // TODO: Login/logout here
+            Snackbar.make(findViewById(android.R.id.content), "User clicked", Snackbar.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.action_settings) {
             return true;
         }
 
@@ -98,7 +103,17 @@ public class MainActivity extends AppCompatActivity {
         questions.add(new Question(UUID.randomUUID(), "What is RecyclerView?",
                 "RecyclerView is a component in Android used to efficiently display long lists of data, offering more flexibility than ListView abc abc abc abc abc abc abc abc abc ",
                 LocalDateTime.now(), UUID.randomUUID()));
+        questions.add(new Question(UUID.randomUUID(), "Benefits of Using Kotlin",
+                "Kotlin is a modern, statically typed programming language that enhances productivity and developer happiness.",
+                LocalDateTime.now(), UUID.randomUUID()));
 
+        questions.add(new Question(UUID.randomUUID(), "Introduction to Jetpack Compose",
+                "Jetpack Compose is Android's modern toolkit for building native UI, which simplifies and accelerates UI development.",
+                LocalDateTime.now(), UUID.randomUUID()));
+
+        questions.add(new Question(UUID.randomUUID(), "Understanding LiveData",
+                "LiveData is an observable data holder class in the lifecycle library that is lifecycle-aware, making it useful for updating the UI.",
+                LocalDateTime.now(), UUID.randomUUID()));
         return questions;
     }
 }

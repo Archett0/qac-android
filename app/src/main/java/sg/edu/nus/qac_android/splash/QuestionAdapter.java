@@ -8,7 +8,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.List;
+import java.util.UUID;
 
 import sg.edu.nus.qac_android.R;
 
@@ -40,6 +43,13 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         Question question = questionList.get(position);
         holder.titleTextView.setText(question.getTitle());
         holder.contentTextView.setText(question.getShortContent());
+
+        holder.itemView.setOnClickListener(v -> {
+            // TODO: Jump to question page
+            UUID questionId = question.getId();
+            String questionTitle = question.getTitle();
+            Snackbar.make(v, "Question ID: " + questionId.toString() + " | Title: " + questionTitle, Snackbar.LENGTH_LONG).show();
+        });
     }
 
     @Override
