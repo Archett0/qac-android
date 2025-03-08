@@ -1,33 +1,26 @@
 package sg.edu.nus.qac_android.splash;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.snackbar.Snackbar;
-
 import java.util.List;
-import java.util.UUID;
-
 import sg.edu.nus.qac_android.R;
-
 import sg.edu.nus.qac_android.data.entity.Question;
+import sg.edu.nus.qac_android.question.QuestionDetailActivity;
 
-/**
- * @Author: Cooper
- * @Date: 2/25/2025
- * @Description:
- */
 public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionViewHolder> {
 
     private List<Question> questionList;
+    private Context context;
 
-    public QuestionAdapter(List<Question> questionList) {
+    public QuestionAdapter(List<Question> questionList, Context context) {
         this.questionList = questionList;
+        this.context = context;
     }
 
     @NonNull
@@ -45,10 +38,11 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         holder.contentTextView.setText(question.getShortContent());
 
         holder.itemView.setOnClickListener(v -> {
-            // TODO: Jump to question page
-            UUID questionId = question.getId();
-            String questionTitle = question.getTitle();
-            Snackbar.make(v, "Question ID: " + questionId.toString() + " | Title: " + questionTitle, Snackbar.LENGTH_LONG).show();
+            Intent intent = new Intent(context, QuestionDetailActivity.class);
+            intent.putExtra("QUESTION_ID", question.getId().toString());  // 传递 ID
+            intent.putExtra("QUESTION_TITLE", question.getTitle());  // 传递标题
+            intent.putExtra("QUESTION_CONTENT", question.getContent());  // 传递内容
+            context.startActivity(intent);
         });
     }
 

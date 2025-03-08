@@ -1,5 +1,6 @@
 package sg.edu.nus.qac_android;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import sg.edu.nus.qac_android.data.entity.Question;
 import sg.edu.nus.qac_android.databinding.ActivityMainBinding;
 import sg.edu.nus.qac_android.notification.NotificationBottomSheet;
+import sg.edu.nus.qac_android.question.CreateQuestionActivity;
 import sg.edu.nus.qac_android.splash.QuestionAdapter;
 
 import android.view.Menu;
@@ -49,18 +51,18 @@ public class MainActivity extends AppCompatActivity {
         binding.fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: Link this to CREATE QUESTION
-                Snackbar.make(view, "TODO: Link this to CREATE QUESTION", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+                // 跳转到 CreateBlogActivity
+                Intent intent = new Intent(MainActivity.this, CreateQuestionActivity.class);
+                startActivity(intent);
             }
         });
+
 
         recyclerView = findViewById(R.id.splash_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         questionList = getMockQuestions(); // TODO: Replace with API data
-        adapter = new QuestionAdapter(questionList);
+        adapter = new QuestionAdapter(questionList,this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -116,4 +118,6 @@ public class MainActivity extends AppCompatActivity {
                 LocalDateTime.now(), UUID.randomUUID()));
         return questions;
     }
+
+
 }

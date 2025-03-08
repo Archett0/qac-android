@@ -1,0 +1,52 @@
+package sg.edu.nus.qac_android.splash;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Locale;
+import sg.edu.nus.qac_android.R;
+import sg.edu.nus.qac_android.data.entity.Answer;
+
+public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerViewHolder> {
+
+    private List<Answer> answerList;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
+
+    public AnswerAdapter(List<Answer> answerList) {
+        this.answerList = answerList;
+    }
+
+    @NonNull
+    @Override
+    public AnswerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_answer, parent, false);
+        return new AnswerViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull AnswerViewHolder holder, int position) {
+        Answer answer = answerList.get(position);
+        holder.answerContent.setText(answer.getContent());
+        holder.answerTime.setText(dateFormat.format(answer.getCreatedAt()));
+    }
+
+    @Override
+    public int getItemCount() {
+        return answerList.size();
+    }
+
+    public static class AnswerViewHolder extends RecyclerView.ViewHolder {
+        TextView answerContent, answerTime;
+
+        public AnswerViewHolder(@NonNull View itemView) {
+            super(itemView);
+            answerContent = itemView.findViewById(R.id.text_answer);
+            answerTime = itemView.findViewById(R.id.text_time);
+        }
+    }
+}
