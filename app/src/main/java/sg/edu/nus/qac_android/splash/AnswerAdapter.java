@@ -6,16 +6,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Locale;
 import sg.edu.nus.qac_android.R;
 import sg.edu.nus.qac_android.data.entity.Answer;
 
 public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerViewHolder> {
 
     private List<Answer> answerList;
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
     public AnswerAdapter(List<Answer> answerList) {
         this.answerList = answerList;
@@ -32,8 +29,10 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerView
     public void onBindViewHolder(@NonNull AnswerViewHolder holder, int position) {
         Answer answer = answerList.get(position);
         holder.answerContent.setText(answer.getContent());
-        holder.answerTime.setText(dateFormat.format(answer.getCreatedAt()));
+
+        holder.answerTime.setVisibility(View.GONE); // 隐藏时间的 TextView
     }
+
 
     @Override
     public int getItemCount() {
