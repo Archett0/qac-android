@@ -1,5 +1,7 @@
 package sg.edu.nus.qac_android.splash;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,14 +10,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 import sg.edu.nus.qac_android.R;
+import sg.edu.nus.qac_android.comment.CommentActivity;
 import sg.edu.nus.qac_android.data.entity.Answer;
 
 public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerViewHolder> {
 
     private List<Answer> answerList;
+    private Context context;
+    private String questionTitle;
 
-    public AnswerAdapter(List<Answer> answerList) {
+    public AnswerAdapter(List<Answer> answerList, Context context, String questionTitle) {
         this.answerList = answerList;
+        this.context = context;
+        this.questionTitle = questionTitle;
     }
 
     @NonNull
@@ -31,6 +38,14 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.AnswerView
         holder.answerContent.setText(answer.getContent());
 
         holder.answerTime.setVisibility(View.GONE); // 隐藏时间的 TextView
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, CommentActivity.class);
+            intent.putExtra("ANSWER_ID", answer.getId().toString());
+            intent.putExtra("QUESTION_TITLE", questionTitle);
+            intent.putExtra("ANSWER_CONTENT", answer.getContent());
+            context.startActivity(intent);
+        });
     }
 
 

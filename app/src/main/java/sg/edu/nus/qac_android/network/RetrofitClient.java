@@ -1,6 +1,8 @@
 package sg.edu.nus.qac_android.network;
 
 import android.content.Context;
+
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 import sg.edu.nus.qac_android.auth.AuthManager;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +15,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    private static final String BASE_URL = "https://10.0.2.2:8080/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient(Context context) {
@@ -42,6 +44,7 @@ public class RetrofitClient {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .client(client)
+                    .addConverterFactory(ScalarsConverterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }

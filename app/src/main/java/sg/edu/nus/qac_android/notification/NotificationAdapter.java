@@ -8,13 +8,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import java.util.List;
-import java.util.UUID;
 
 import sg.edu.nus.qac_android.R;
-import sg.edu.nus.qac_android.data.entity.Notification;
+import sg.edu.nus.qac_android.data.dto.NotificationDTO;
 
 /**
  * @Author: Cooper
@@ -22,9 +19,9 @@ import sg.edu.nus.qac_android.data.entity.Notification;
  * @Description:
  */
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
-    private List<Notification> notifications;
+    private List<NotificationDTO> notifications;
 
-    public NotificationAdapter(List<Notification> notifications) {
+    public NotificationAdapter(List<NotificationDTO> notifications) {
         this.notifications = notifications;
     }
 
@@ -37,14 +34,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Notification notification = notifications.get(position);
-        holder.notificationText.setText(notification.getMessage());
-
+        NotificationDTO notification = notifications.get(position);
+        holder.notificationText.setText(notification.toString());
         holder.itemView.setOnClickListener(v -> {
-            String sender = notification.getSender();
-            UUID questionId = notification.getId();
-            Snackbar.make(v, "Question ID: " + questionId.toString() + " | Sender: " + sender, Snackbar.LENGTH_LONG).show();
-            // TODO: Click and jump to question page
+//            String sender = notification.get();
+//            UUID questionId = notification.();
+//            Snackbar.make(v, "Question ID: " + questionId.toString() + " | Sender: " + sender, Snackbar.LENGTH_LONG).show();
+//            // TODO: Click and jump to question page
         });
     }
 

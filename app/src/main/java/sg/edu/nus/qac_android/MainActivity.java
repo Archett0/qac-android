@@ -112,6 +112,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fetchQuestions();
+    }
+
     private void logout() {
         Log.d("MainActivity", "Logging out...");
         authManager.logout();

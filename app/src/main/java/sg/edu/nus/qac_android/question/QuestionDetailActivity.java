@@ -89,7 +89,7 @@ public class QuestionDetailActivity extends AppCompatActivity {
 
         // 初始化答案列表
         answersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        answerAdapter = new AnswerAdapter(answerList);
+        answerAdapter = new AnswerAdapter(answerList, QuestionDetailActivity.this, title);
         answersRecyclerView.setAdapter(answerAdapter);
 
         // 加载问题的所有回答

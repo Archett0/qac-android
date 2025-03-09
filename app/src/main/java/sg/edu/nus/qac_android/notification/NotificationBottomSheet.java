@@ -1,11 +1,13 @@
 package sg.edu.nus.qac_android.notification;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,9 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import sg.edu.nus.qac_android.R;
-import sg.edu.nus.qac_android.data.dto.NotificationType;
-import sg.edu.nus.qac_android.data.entity.Notification;
+import sg.edu.nus.qac_android.auth.AuthManager;
+import sg.edu.nus.qac_android.data.dto.NotificationDTO;
+import sg.edu.nus.qac_android.network.ApiService;
+import sg.edu.nus.qac_android.network.RetrofitClient;
+import sg.edu.nus.qac_android.utils.UUIDConverter;
 
 /**
  * @Author: Cooper
@@ -33,22 +41,11 @@ import sg.edu.nus.qac_android.data.entity.Notification;
 public class NotificationBottomSheet extends BottomSheetDialogFragment {
     private RecyclerView recyclerView;
     private NotificationAdapter adapter;
-    private List<Notification> notificationList;
+    private List<NotificationDTO> notificationList = new ArrayList<>();
     private Button btnClear;
     private TextView tvNotificationCentre;
-
-    public NotificationBottomSheet() {
-        // TODO: Mock data
-        notificationList = new ArrayList<>();
-        notificationList.add(new Notification(UUID.randomUUID(), UUID.randomUUID(), "John Doe",
-                "New answer on: 'How to learn Java?'", LocalDateTime.now(), NotificationType.ANSWER_POSTED));
-
-        notificationList.add(new Notification(UUID.randomUUID(), UUID.randomUUID(), "Jane Doe",
-                "New comment on: 'Spring Boot and Android'", LocalDateTime.now(), NotificationType.COMMENT_POSTED));
-
-        notificationList.add(new Notification(UUID.randomUUID(), UUID.randomUUID(), "Mike Lee",
-                "New upvote on: 'RecyclerView in Android'", LocalDateTime.now(), NotificationType.UPVOTE_RECEIVED));
-    }
+    private ApiService apiService;
+    private AuthManager authManager;
 
     @Nullable
     @Override
@@ -59,12 +56,18 @@ public class NotificationBottomSheet extends BottomSheetDialogFragment {
         btnClear = view.findViewById(R.id.btn_clear_notifications);
         tvNotificationCentre = view.findViewById(R.id.tv_notification_centre);
 
+        authManager = new AuthManager(getContext());
+        apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new NotificationAdapter(notificationList);
         recyclerView.setAdapter(adapter);
 
-        updateNotificationCentreText();
+        fetchNotifications();
         btnClear.setOnClickListener(v -> {
+            if (notificationList.size() != 0) {
+                clearAllNotifications();
+            }
             notificationList.clear();
             adapter.notifyDataSetChanged();
             dismiss();
@@ -76,8 +79,83 @@ public class NotificationBottomSheet extends BottomSheetDialogFragment {
         return view;
     }
 
-    private void updateNotificationCentreText() {
-        String notificationText = "Notification Centre (" + notificationList.size() + ")";
-        tvNotificationCentre.setText(notificationText);
+    private void fetchNotifications() {
+        String userIdString = authManager.getUserId();
+        Log.d("NotificationBottomSheet", "Fetching notifications for user: " + userIdString);
+        UUID uuidId = UUIDConverter.convertStringToUUID(userIdString);
+        apiService.getNotificationsById(uuidId).enqueue(new Callback<List<NotificationDTO>>() {
+            @Override
+            public void onResponse(Call<List<NotificationDTO>> call, Response<List<NotificationDTO>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    notificationList.clear();
+                    notificationList.addAll(response.body());
+                    String notificationText = "Notification Centre (" + notificationList.size() + ")";
+                    tvNotificationCentre.setText(notificationText);
+                    adapter.notifyDataSetChanged();
+                } else {
+                    Log.e("NotificationBottomSheet", "Failed to load notifications: " + response.message());
+                    Toast.makeText(getContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<List<NotificationDTO>> call, Throwable t) {
+                Log.e("NotificationBottomSheet", "Failed fetching notifications: " + t.getMessage());
+                Toast.makeText(getContext(), "Failed fetching notifications", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void clearAllNotifications() {
+        String userIdString = authManager.getUserId();
+        Log.d("NotificationBottomSheet", "Deleting all notifications for user: " + userIdString);
+        UUID uuidId = UUIDConverter.convertStringToUUID(userIdString);
+        apiService.deleteNotification(uuidId, 0).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.i("NotificationBottomSheet", "Cleared notifications type 0: " + response.message());
+                } else {
+                    Log.e("NotificationBottomSheet", "Failed clear notifications type 0: " + response.message());
+                    Toast.makeText(getContext(), "Failed to clear notifications", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.e("NotificationBottomSheet", "Failed clearing notifications: " + t.getMessage());
+                Toast.makeText(getContext(), "Failed clearing notifications", Toast.LENGTH_SHORT).show();
+            }
+        });
+        apiService.deleteNotification(uuidId, 1).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.i("NotificationBottomSheet", "Cleared notifications type 1: " + response.message());
+                } else {
+                    Log.e("NotificationBottomSheet", "Failed clear notifications type 1: " + response.message());
+                    Toast.makeText(getContext(), "Failed to clear notifications", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.e("NotificationBottomSheet", "Failed clearing notifications: " + t.getMessage());
+                Toast.makeText(getContext(), "Failed clearing notifications", Toast.LENGTH_SHORT).show();
+            }
+        });
+        apiService.deleteNotification(uuidId, 2).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.i("NotificationBottomSheet", "Cleared notifications type 2: " + response.message());
+                } else {
+                    Log.e("NotificationBottomSheet", "Failed clear notifications type 2: " + response.message());
+                    Toast.makeText(getContext(), "Failed to clear notifications", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.e("NotificationBottomSheet", "Failed clearing notifications: " + t.getMessage());
+                Toast.makeText(getContext(), "Failed clearing notifications", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
