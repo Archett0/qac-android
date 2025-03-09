@@ -2,84 +2,51 @@ package sg.edu.nus.qac_android;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.auth0.android.authentication.AuthenticationException;
-import com.google.android.material.snackbar.Snackbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.util.Log;
-import android.view.View;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.List;
+import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import sg.edu.nus.qac_android.auth.AuthManager;
 import sg.edu.nus.qac_android.auth.LoginActivity;
-import sg.edu.nus.qac_android.data.entity.Auth0User;
 import sg.edu.nus.qac_android.data.entity.Question;
 import sg.edu.nus.qac_android.databinding.ActivityMainBinding;
+import sg.edu.nus.qac_android.network.ApiService;
+import sg.edu.nus.qac_android.network.RetrofitClient;
 import sg.edu.nus.qac_android.notification.NotificationBottomSheet;
 import sg.edu.nus.qac_android.question.CreateQuestionActivity;
 import sg.edu.nus.qac_android.splash.QuestionAdapter;
 
-import android.view.Menu;
-import android.view.MenuItem;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import com.auth0.android.Auth0;
-import com.auth0.android.provider.WebAuthProvider;
-
-
-/**
- * @Author: Cooper
- * @Date: 2/25/2025
- * @Description:
- */
 public class MainActivity extends AppCompatActivity {
+    private ActivityMainBinding binding;
+    private AuthManager authManager;
+    private ApiService apiService;
     private RecyclerView recyclerView;
     private QuestionAdapter adapter;
-    private List<Question> questionList;
-    private ActivityMainBinding binding;
 
-    private AuthManager authManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         authManager = new AuthManager(this);
+        apiService = RetrofitClient.getClient(this).create(ApiService.class); // 传入 Context
 
 
         if (!authManager.isLoggedIn()) {
-            Log.d("MainActivity", "user not login LoginActivity");
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
+            Log.d("MainActivity", "User not logged in, redirecting to LoginActivity");
+            startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
-
-        //test
-        try {
-            String token = authManager.getToken();
-            Auth0User user = authManager.parseIdToken(authManager.getIdToken());
-            Log.d("MainActivity", "Token found in MainActivity: " + token);
-            Log.d("MainActivity", "User found in MainActivity: " + user.toString());
-
-            if (token == null || token.isEmpty()) {
-                Log.e("MainActivity", "Token is NULL or Empty, redirecting to LoginActivity");
-                Intent intent = new Intent(this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
-        } catch (Exception e) {
-            Log.e("MainActivity", "Token parse/get failed, " + e.getMessage());
-        }
-
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -87,22 +54,47 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Q&A Platform");
 
+        // 跳转到创建问题页面
         binding.fab.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, CreateQuestionActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(MainActivity.this, CreateQuestionActivity.class));
         });
 
         recyclerView = findViewById(R.id.splash_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        questionList = getMockQuestions(); // TODO: Replace with API data
-        adapter = new QuestionAdapter(questionList, this);
-        recyclerView.setAdapter(adapter);
+        fetchQuestions(); // 🚀 从 API 获取所有问题
     }
+
+    private void fetchQuestions() {
+        Log.d("MainActivity", "Fetching questions from API...");
+
+        apiService.getQuestions().enqueue(new Callback<List<Question>>() {
+            @Override
+            public void onResponse(Call<List<Question>> call, Response<List<Question>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Question> questions = response.body();
+                    adapter = new QuestionAdapter(questions, MainActivity.this);
+                    recyclerView.setAdapter(adapter);
+                    Log.d("MainActivity", "Questions loaded successfully: " + questions.size());
+                } else {
+                    Log.e("MainActivity", "Failed to fetch questions: " + response.message());
+                    Log.e("MainActivity", "API URL: " + call.request().url());
+                    Toast.makeText(MainActivity.this, "Failed to load questions", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Question>> call, Throwable t) {
+                Log.e("MainActivity", "Error fetching questions: " + t.getMessage());
+                Log.e("MainActivity", "API URL: " + call.request().url());
+                Toast.makeText(MainActivity.this, "Network error. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -110,90 +102,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.action_logout) {
             logout();
             return true;
         } else if (id == R.id.action_notifications) {
-            NotificationBottomSheet bottomSheet = new NotificationBottomSheet();
-            bottomSheet.show(getSupportFragmentManager(), "NotificationBottomSheet");
+            new NotificationBottomSheet().show(getSupportFragmentManager(), "NotificationBottomSheet");
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-
     private void logout() {
         Log.d("MainActivity", "Logging out...");
-
-        Auth0 auth0 = new Auth0(
-                getString(R.string.com_auth0_client_id),
-                getString(R.string.com_auth0_domain)
-        );
-
-        WebAuthProvider.logout(auth0)
-                .withScheme("demo")
-                .start(this, new com.auth0.android.callback.Callback<Void, AuthenticationException>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        Log.d("MainActivity", "Logout successful");
-
-                        authManager.logout();
-
-                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    }
-
-                    @Override
-                    public void onFailure(AuthenticationException error) {
-                        Log.e("MainActivity", "Logout failed: " + error.getMessage());
-                    }
-                });
+        authManager.logout();
+        startActivity(new Intent(MainActivity.this, LoginActivity.class));
+        finish();
     }
-
-
-
-
-    private List<Question> getMockQuestions() {
-        List<Question> questions = new ArrayList<>();
-
-        questions.add(new Question(UUID.randomUUID(), "What is Dependency Injection?",
-                "Dependency Injection (DI) is a design pattern used to implement IoC (Inversion of Control), allowing objects to be injected instead of being created inside a class. Popular frameworks for DI include Spring and Dagger.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "How does Retrofit work in Android?",
-                "Retrofit is a type-safe HTTP client for Android and Java, used for network communication. It simplifies REST API calls and JSON parsing with built-in serialization support.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "What are the benefits of using Jetpack Compose?",
-                "Jetpack Compose is Android’s modern UI toolkit that simplifies UI development with a declarative approach, reducing boilerplate code and improving performance.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "How to optimize RecyclerView performance?",
-                "To optimize RecyclerView performance, use ViewHolder pattern, enable DiffUtil for item changes, avoid nested layouts, and use setHasFixedSize(true) when applicable.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "Why use Kotlin for Android development?",
-                "Kotlin offers concise syntax, null safety, coroutine support for asynchronous programming, and seamless Java interoperability, making it an excellent choice for Android development.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "What is MVVM architecture in Android?",
-                "MVVM (Model-View-ViewModel) is a design pattern that separates UI logic from business logic. It enhances code maintainability and testability by using ViewModel to manage UI-related data lifecycle-aware components.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "How does Room Database work in Android?",
-                "Room is a part of the Android Jetpack suite, providing an abstraction layer over SQLite to allow database access with minimal boilerplate code.",
-                UUID.randomUUID()));
-
-        questions.add(new Question(UUID.randomUUID(), "How to handle background tasks efficiently in Android?",
-                "Android provides WorkManager, JobScheduler, and coroutines to handle background tasks efficiently, ensuring battery optimization and proper execution lifecycle management.",
-                UUID.randomUUID()));
-
-        return questions;
-    }
-
-
-
 }

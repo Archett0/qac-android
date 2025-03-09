@@ -14,7 +14,7 @@ import sg.edu.nus.qac_android.data.entity.Answer;
 public interface ApiService {
 
     // 获取所有问题
-    @GET("/api/questions")
+    @GET("QnA/questions")
     Call<List<Question>> getQuestions();
 
     // 根据 ID 获取单个问题
@@ -22,7 +22,7 @@ public interface ApiService {
     Call<Question> getQuestionById(@Path("id") UUID questionId);
 
     // 提交新问题
-    @POST("/api/questions")
+    @POST("QnA/question/add")
     Call<Question> createQuestion(@Body Question question);
 
     // 获取某个问题的所有回答

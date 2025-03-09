@@ -85,7 +85,6 @@ public class CreateQuestionActivity extends AppCompatActivity {
 
         Log.d("CreateQuestionActivity", "Submitting question: " + newQuestion.toString());
 
-        // 发送 API 请求（不手动加 Authorization，Retrofit 自动处理）
         apiService.createQuestion(newQuestion).enqueue(new Callback<Question>() {
             @Override
             public void onResponse(Call<Question> call, Response<Question> response) {
