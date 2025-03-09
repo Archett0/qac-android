@@ -11,7 +11,11 @@ import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 import sg.edu.nus.qac_android.MainActivity;
 import sg.edu.nus.qac_android.R;
+import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.auth0.android.result.UserProfile;
 import sg.edu.nus.qac_android.data.entity.Auth0User;
+
+
 
 public class LoginActivity extends AppCompatActivity {
     private Auth0 auth0;
@@ -66,6 +70,13 @@ public class LoginActivity extends AppCompatActivity {
                         Auth0User auth0User = authManager.parseIdToken(credentials.getIdToken());
                         Log.d("LoginActivity", "ID token PARSED successfully: " + auth0User.toString());
 
+                        if (auth0User != null && auth0User.getUuid() != null) {
+                            authManager.saveUserId(auth0User.getUuid());
+                            Log.d("LoginActivity", "User ID saved: " + auth0User.getUuid());
+                        } else {
+                            Log.e("LoginActivity", "Failed to parse user ID from ID Token");
+                        }
+
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("TOKEN", credentials.getAccessToken());
                         intent.putExtra("ID_TOKEN", credentials.getIdToken());
@@ -79,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
+
 
     @Override
     protected void onNewIntent(Intent intent) {

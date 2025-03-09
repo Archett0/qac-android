@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     private void logout() {
         Log.d("MainActivity", "Logging out...");
 
@@ -144,30 +146,42 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Question> getMockQuestions() {
         List<Question> questions = new ArrayList<>();
-        questions.add(new Question(UUID.randomUUID(), "How to learn Java?",
-                "Java is a widely used object-oriented programming language primarily for enterprise application development.",
-                LocalDateTime.now(), UUID.randomUUID()));
 
-        questions.add(new Question(UUID.randomUUID(), "Spring Boot and Android interaction?",
-                "Spring Boot provides powerful RESTful API capabilities, and Android accesses it through Retrofit.",
-                LocalDateTime.now(), UUID.randomUUID()));
+        questions.add(new Question(UUID.randomUUID(), "What is Dependency Injection?",
+                "Dependency Injection (DI) is a design pattern used to implement IoC (Inversion of Control), allowing objects to be injected instead of being created inside a class. Popular frameworks for DI include Spring and Dagger.",
+                UUID.randomUUID()));
 
-        questions.add(new Question(UUID.randomUUID(), "What is RecyclerView?",
-                "RecyclerView is a component in Android used to efficiently display long lists of data, offering more flexibility than ListView abc abc abc abc abc abc abc abc abc ",
-                LocalDateTime.now(), UUID.randomUUID()));
-        questions.add(new Question(UUID.randomUUID(), "Benefits of Using Kotlin",
-                "Kotlin is a modern, statically typed programming language that enhances productivity and developer happiness.",
-                LocalDateTime.now(), UUID.randomUUID()));
+        questions.add(new Question(UUID.randomUUID(), "How does Retrofit work in Android?",
+                "Retrofit is a type-safe HTTP client for Android and Java, used for network communication. It simplifies REST API calls and JSON parsing with built-in serialization support.",
+                UUID.randomUUID()));
 
-        questions.add(new Question(UUID.randomUUID(), "Introduction to Jetpack Compose",
-                "Jetpack Compose is Android's modern toolkit for building native UI, which simplifies and accelerates UI development.",
-                LocalDateTime.now(), UUID.randomUUID()));
+        questions.add(new Question(UUID.randomUUID(), "What are the benefits of using Jetpack Compose?",
+                "Jetpack Compose is Android’s modern UI toolkit that simplifies UI development with a declarative approach, reducing boilerplate code and improving performance.",
+                UUID.randomUUID()));
 
-        questions.add(new Question(UUID.randomUUID(), "Understanding LiveData",
-                "LiveData is an observable data holder class in the lifecycle library that is lifecycle-aware, making it useful for updating the UI.",
-                LocalDateTime.now(), UUID.randomUUID()));
+        questions.add(new Question(UUID.randomUUID(), "How to optimize RecyclerView performance?",
+                "To optimize RecyclerView performance, use ViewHolder pattern, enable DiffUtil for item changes, avoid nested layouts, and use setHasFixedSize(true) when applicable.",
+                UUID.randomUUID()));
+
+        questions.add(new Question(UUID.randomUUID(), "Why use Kotlin for Android development?",
+                "Kotlin offers concise syntax, null safety, coroutine support for asynchronous programming, and seamless Java interoperability, making it an excellent choice for Android development.",
+                UUID.randomUUID()));
+
+        questions.add(new Question(UUID.randomUUID(), "What is MVVM architecture in Android?",
+                "MVVM (Model-View-ViewModel) is a design pattern that separates UI logic from business logic. It enhances code maintainability and testability by using ViewModel to manage UI-related data lifecycle-aware components.",
+                UUID.randomUUID()));
+
+        questions.add(new Question(UUID.randomUUID(), "How does Room Database work in Android?",
+                "Room is a part of the Android Jetpack suite, providing an abstraction layer over SQLite to allow database access with minimal boilerplate code.",
+                UUID.randomUUID()));
+
+        questions.add(new Question(UUID.randomUUID(), "How to handle background tasks efficiently in Android?",
+                "Android provides WorkManager, JobScheduler, and coroutines to handle background tasks efficiently, ensuring battery optimization and proper execution lifecycle management.",
+                UUID.randomUUID()));
+
         return questions;
     }
+
 
 
 }
