@@ -11,7 +11,6 @@ import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 import sg.edu.nus.qac_android.MainActivity;
 import sg.edu.nus.qac_android.R;
-import sg.edu.nus.qac_android.data.entity.Auth0User;
 
 public class LoginActivity extends AppCompatActivity {
     private Auth0 auth0;
@@ -52,20 +51,12 @@ public class LoginActivity extends AppCompatActivity {
                             Log.e("LoginActivity", "Access Token is NULL or Empty, login failed");
                             return;
                         }
-                        Log.d("LoginActivity", "Login Success, access_token: " + credentials.getAccessToken());
                         if (credentials.getIdToken().isEmpty()) {
                             Log.e("LoginActivity", "ID TOKEN EMPTY");
                             return;
                         }
-                        Log.d("LoginActivity", "Login Success, id_token: " + credentials.getIdToken());
-
                         authManager.saveToken(credentials.getAccessToken());
                         authManager.saveIdToken(credentials.getIdToken());
-                        Log.d("LoginActivity", "Both tokens SAVED successfully, now parsing");
-
-                        Auth0User auth0User = authManager.parseIdToken(credentials.getIdToken());
-                        Log.d("LoginActivity", "ID token PARSED successfully: " + auth0User.toString());
-
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("TOKEN", credentials.getAccessToken());
                         intent.putExtra("ID_TOKEN", credentials.getIdToken());
