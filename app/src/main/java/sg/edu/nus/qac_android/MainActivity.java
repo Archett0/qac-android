@@ -3,15 +3,19 @@ package sg.edu.nus.qac_android;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.auth0.android.authentication.AuthenticationException;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import sg.edu.nus.qac_android.auth.AuthManager;
+import sg.edu.nus.qac_android.auth.LoginActivity;
 import sg.edu.nus.qac_android.data.entity.Question;
 import sg.edu.nus.qac_android.databinding.ActivityMainBinding;
 import sg.edu.nus.qac_android.notification.NotificationBottomSheet;
@@ -26,6 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import com.auth0.android.Auth0;
+import com.auth0.android.provider.WebAuthProvider;
+
 
 /**
  * @Author: Cooper
@@ -38,9 +45,32 @@ public class MainActivity extends AppCompatActivity {
     private List<Question> questionList;
     private ActivityMainBinding binding;
 
+    private AuthManager authManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        authManager = new AuthManager(this);
+
+
+        if (!authManager.isLoggedIn()) {
+            Log.d("MainActivity", "user not login LoginActivity");
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+        //test
+        String token = authManager.getToken();
+        Log.d("MainActivity", "Token found in MainActivity: " + token);
+
+        if (token == null || token.isEmpty()) {
+            Log.e("MainActivity", "Token is NULL or Empty, redirecting to LoginActivity");
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -48,21 +78,16 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Q&A Platform");
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // 跳转到 CreateBlogActivity
-                Intent intent = new Intent(MainActivity.this, CreateQuestionActivity.class);
-                startActivity(intent);
-            }
+        binding.fab.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, CreateQuestionActivity.class);
+            startActivity(intent);
         });
-
 
         recyclerView = findViewById(R.id.splash_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         questionList = getMockQuestions(); // TODO: Replace with API data
-        adapter = new QuestionAdapter(questionList,this);
+        adapter = new QuestionAdapter(questionList, this);
         recyclerView.setAdapter(adapter);
     }
 
@@ -77,20 +102,45 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_notifications) {
-            NotificationBottomSheet bottomSheet = new NotificationBottomSheet();
-            bottomSheet.show(getSupportFragmentManager(), "NotificationBottomSheet");
-            return true;
-        } else if (id == R.id.action_user) {
-            // TODO: Login/logout here
-            Snackbar.make(findViewById(android.R.id.content), "User clicked", Snackbar.LENGTH_SHORT).show();
-            return true;
-        } else if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            logout();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
+
+    private void logout() {
+        Log.d("MainActivity", "Logging out...");
+
+        Auth0 auth0 = new Auth0(
+                getString(R.string.com_auth0_client_id),
+                getString(R.string.com_auth0_domain)
+        );
+
+        WebAuthProvider.logout(auth0)
+                .withScheme("demo")
+                .start(this, new com.auth0.android.callback.Callback<Void, AuthenticationException>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        Log.d("MainActivity", "Logout successful");
+
+                        authManager.logout();
+
+                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(AuthenticationException error) {
+                        Log.e("MainActivity", "Logout failed: " + error.getMessage());
+                    }
+                });
+    }
+
+
+
 
     private List<Question> getMockQuestions() {
         List<Question> questions = new ArrayList<>();

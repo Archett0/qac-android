@@ -39,9 +39,9 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, QuestionDetailActivity.class);
-            intent.putExtra("QUESTION_ID", question.getId().toString());  // 传递 ID
-            intent.putExtra("QUESTION_TITLE", question.getTitle());  // 传递标题
-            intent.putExtra("QUESTION_CONTENT", question.getContent());  // 传递内容
+            intent.putExtra("QUESTION_ID", question.getId().toString());
+            intent.putExtra("QUESTION_TITLE", question.getTitle());
+            intent.putExtra("QUESTION_CONTENT", question.getContent());
             context.startActivity(intent);
         });
     }

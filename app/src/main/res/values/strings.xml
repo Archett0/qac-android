@@ -11,4 +11,7 @@
 
     <string name="question_detail_title">Question Detail</string>
     <string name="back_button">Back</string>
+
+    <string name="com_auth0_client_id">qmJi5YFhDGNm25RgcRfdFurIK3L6N7Ej</string>
+    <string name="com_auth0_domain">dev-jr5iip1iu6v8pylo.us.auth0.com</string>
 </resources>
