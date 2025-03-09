@@ -11,6 +11,7 @@ import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 import sg.edu.nus.qac_android.MainActivity;
 import sg.edu.nus.qac_android.R;
+import sg.edu.nus.qac_android.data.entity.Auth0User;
 
 public class LoginActivity extends AppCompatActivity {
     private Auth0 auth0;
@@ -42,26 +43,32 @@ public class LoginActivity extends AppCompatActivity {
     private void login() {
         WebAuthProvider.login(auth0)
                 .withScheme("demo")
-                .withAudience("https://dev-jr5iip1iu6v8pylo.us.auth0.com/userinfo")
+                .withAudience("https://qac.com")
                 .withScope("openid profile email")
                 .start(this, new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials credentials) {
-                        Log.d("LoginActivity", "Login Success: " + credentials.getAccessToken());
-
-                        if (credentials.getAccessToken() == null || credentials.getAccessToken().isEmpty()) {
+                        if (credentials.getAccessToken().isEmpty()) {
                             Log.e("LoginActivity", "Access Token is NULL or Empty, login failed");
                             return;
                         }
+                        Log.d("LoginActivity", "Login Success, access_token: " + credentials.getAccessToken());
+                        if (credentials.getIdToken().isEmpty()) {
+                            Log.e("LoginActivity", "ID TOKEN EMPTY");
+                            return;
+                        }
+                        Log.d("LoginActivity", "Login Success, id_token: " + credentials.getIdToken());
 
-                        // 存储 Token
                         authManager.saveToken(credentials.getAccessToken());
+                        authManager.saveIdToken(credentials.getIdToken());
+                        Log.d("LoginActivity", "Both tokens SAVED successfully, now parsing");
 
-                        Log.d("LoginActivity", "Token saved successfully: " + credentials.getAccessToken());
+                        Auth0User auth0User = authManager.parseIdToken(credentials.getIdToken());
+                        Log.d("LoginActivity", "ID token PARSED successfully: " + auth0User.toString());
 
-                        // 跳转到 MainActivity
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.putExtra("TOKEN", credentials.getAccessToken()); // 传递 Token
+                        intent.putExtra("TOKEN", credentials.getAccessToken());
+                        intent.putExtra("ID_TOKEN", credentials.getIdToken());
                         startActivity(intent);
                         finish();
                     }
