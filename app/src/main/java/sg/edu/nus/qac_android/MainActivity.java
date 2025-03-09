@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import sg.edu.nus.qac_android.auth.AuthManager;
 import sg.edu.nus.qac_android.auth.LoginActivity;
+import sg.edu.nus.qac_android.data.entity.Auth0User;
 import sg.edu.nus.qac_android.data.entity.Question;
 import sg.edu.nus.qac_android.databinding.ActivityMainBinding;
 import sg.edu.nus.qac_android.notification.NotificationBottomSheet;
@@ -60,16 +61,23 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-        //test
-        String token = authManager.getToken();
-        Log.d("MainActivity", "Token found in MainActivity: " + token);
 
-        if (token == null || token.isEmpty()) {
-            Log.e("MainActivity", "Token is NULL or Empty, redirecting to LoginActivity");
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-            return;
+        //test
+        try {
+            String token = authManager.getToken();
+            Auth0User user = authManager.parseIdToken(authManager.getIdToken());
+            Log.d("MainActivity", "Token found in MainActivity: " + token);
+            Log.d("MainActivity", "User found in MainActivity: " + user.toString());
+
+            if (token == null || token.isEmpty()) {
+                Log.e("MainActivity", "Token is NULL or Empty, redirecting to LoginActivity");
+                Intent intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        } catch (Exception e) {
+            Log.e("MainActivity", "Token parse/get failed, " + e.getMessage());
         }
 
 
@@ -105,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (id == R.id.action_logout) {
             logout();
+            return true;
+        } else if (id == R.id.action_notifications) {
+            NotificationBottomSheet bottomSheet = new NotificationBottomSheet();
+            bottomSheet.show(getSupportFragmentManager(), "NotificationBottomSheet");
             return true;
         }
         return super.onOptionsItemSelected(item);

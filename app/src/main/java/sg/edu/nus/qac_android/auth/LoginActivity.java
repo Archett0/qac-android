@@ -56,13 +56,10 @@ public class LoginActivity extends AppCompatActivity {
                             Log.e("LoginActivity", "Access Token is NULL or Empty, login failed");
                             return;
                         }
-                        Log.d("LoginActivity", "Login Success, access_token: " + credentials.getAccessToken());
                         if (credentials.getIdToken().isEmpty()) {
                             Log.e("LoginActivity", "ID TOKEN EMPTY");
                             return;
                         }
-                        Log.d("LoginActivity", "Login Success, id_token: " + credentials.getIdToken());
-
                         authManager.saveToken(credentials.getAccessToken());
                         authManager.saveIdToken(credentials.getIdToken());
                         Log.d("LoginActivity", "Both tokens SAVED successfully, now parsing");
