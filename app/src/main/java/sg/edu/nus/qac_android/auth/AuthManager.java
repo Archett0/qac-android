@@ -68,7 +68,7 @@ public class AuthManager {
         }
         try {
             String decryptedToken = decryptToken(encryptedToken);
-            Log.d("AuthManager", "Retrieved and decrypted access_token: " + decryptedToken);
+            Log.d("AuthManager", "Retrieved and decrypted access_token.");
             return decryptedToken;
         } catch (Exception e) {
             Log.e("AuthManager", "Error decrypting access_token: " + e.getMessage());
@@ -104,7 +104,7 @@ public class AuthManager {
         }
         try {
             String decryptedToken = decryptToken(encryptedToken);
-            Log.d("AuthManager", "Retrieved and decrypted id_token: " + decryptedToken);
+            Log.d("AuthManager", "Retrieved and decrypted id_token.");
             return decryptedToken;
         } catch (Exception e) {
             Log.e("AuthManager", "Error decrypting id_token: " + e.getMessage());
@@ -118,8 +118,13 @@ public class AuthManager {
      * @param id user's id
      */
     public void saveUserId(String id) {
-        Log.d("AuthManager", "Saving user UUID id as String: " + id);
-        sharedPreferences.edit().putString(KEY_USER_ID, id).apply();
+        try {
+            String encryptedId = encryptToken(id);
+            Log.d("AuthManager", "Saving encrypted user UUID id as String: " + encryptedId);
+            sharedPreferences.edit().putString(KEY_USER_ID, encryptedId).apply();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -128,9 +133,14 @@ public class AuthManager {
      * @return user's id
      */
     public String getUserId() {
-        String id = sharedPreferences.getString(KEY_USER_ID, null);
-        Log.d("AuthManager", "Retrieved user UUID id as String: " + id);
-        return id;
+        try {
+            String encryptedId = sharedPreferences.getString(KEY_USER_ID, null);
+            String decryptedId = decryptToken(encryptedId);
+            Log.d("AuthManager", "Retrieved and decrypted user UUID id as String.");
+            return decryptedId;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean isLoggedIn() {
